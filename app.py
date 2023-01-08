@@ -5,7 +5,7 @@ Flask app for scoring a model
 ###########################
 # Imports
 ###########################
-from flask import Flask, render_template, request, jsonify, abort
+from flask import Flask, render_template, request, jsonify, abort, make_response
 from model import score_model
 from jsonschema import validate
 
@@ -21,7 +21,8 @@ schema = {
     "properties": {
         "x1": {"type": "number"},
         "x2": {"type": "number"}
-    }
+    },
+    "required": ["x1","x2"]
 }
 
 ###########################
@@ -33,6 +34,10 @@ app = Flask(__name__)
 @app.route("/")
 def home():
     return render_template("home.html")
+
+@app.errorhandler(400)
+def bad_data_error(error):
+    return make_response(jsonify({'message': str(error)}),400)
 
 @app.route('/score', methods=['POST'])
 def score():
@@ -54,8 +59,11 @@ def score():
     # Validate JSON matches expected schema
     try:
         validate(instance=score_data, schema=schema)
-    except:
-        abort(400, 'Bad Data')
+        print("Try finished without error")
+    except Exception as e:
+        print("Except triggered")
+        abort(400, e)
+        print("Except finished")
 
     # Score data:
     results = score_model(score_data)
