@@ -59,11 +59,8 @@ def score():
     # Validate JSON matches expected schema
     try:
         validate(instance=score_data, schema=schema)
-        print("Try finished without error")
     except Exception as e:
-        print("Except triggered")
         abort(400, e)
-        print("Except finished")
 
     # Score data:
     results = score_model(score_data)
